@@ -1,12 +1,10 @@
 # embalsesPuertoRico
 
-/**********************************************************************
-// Embalse Project - Puerto Rico's Water Reservoirs
-// Jordan Caraballo & Elio Ramos, University of Puerto Rico at Humacao
-// Mathematics Department, Comp-4019
-// Details: This file contains JS functions to process and graph data
-// from Puerto Rico's principal water reservoirs.
-**********************************************************************/
+ Embalse Project - Puerto Rico's Water Reservoirs
+ Jordan Caraballo & Elio Ramos, University of Puerto Rico at Humacao
+ Mathematics Department, Comp-4019
+ Details: This file contains JS functions to process and graph data
+ from Puerto Rico's principal water reservoirs.
 
 The aim of this project is to develop a JS application able to monitor
 and graph the live status of Puerto Rico's reservoirs from USGS data.
