@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title> Leaflet Map with a marker defined to be plotted in D3 </title>
+	<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<META HTTP-EQUIV="refresh" CONTENT="3600">
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+  <link rel="stylesheet" href="embalse/embalse.css" />
+  <link rel="stylesheet" href="leaflet/leaflet.css"/>
+  <script type="text/javascript" src="leaflet/leaflet.js"></script>
+  <script type="text/javascript" src="jquery/jquery-3.2.1.js"></script>
+  <script type="text/javascript" src="d3/d3.js"></script>
+  <script type="text/javascript" src="embalse/embalse.js"></script>
+  <script type="text/javascript" src="spin/spin.min.js"></script>
+  <script type="text/javascript" src="spin/leaflet.spin.min.js"></script>
+</head>
+
+<body>
+
+<H2> Live status of water reservoirs in Puerto Rico </H2>
+
+<div id="mapid" style="width: 1600px; height: 600px;"></div>
+
+<script>
+
+    ///////////////////////////////////////////////////////////////////
+    // Construct map from Puerto Rico using Leflet and public tokens //
+    ///////////////////////////////////////////////////////////////////
+
+    var mymap = L.map('mapid').setView([18.25,-66.3], 10);
+    var apiLink = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}';
+    var mapLink = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a>';
+    var token = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+
+    L.tileLayer(apiLink, {
+                attribution: mapLink,
+                maxZoom: 18,
+                id: 'mapbox.streets',
+                accessToken: token}).addTo(mymap);
+
+    // Latitude and longitude of water reservoirs together with their ids
+		var locationArray = [   ["50059000",18.32791, -66.01628], ["50045000",18.343  , -66.23607],
+														["50047550",18.1969 , -66.14072], ["50093045",18.01774, -66.0185 ],
+														["50111210",18.10166, -66.48902], ["50039995",18.07524, -66.10683],
+														["50076800",18.22389, -65.78142], ["50026140",18.27654, -66.65642],
+														["50071225",18.2969 , -65.65858], ["50010800",18.39836, -66.9227 ],
+														["50113950",18.07703, -66.57547]
+												];
+
+		  // Variables to update - there is a meta tag that I added that will update everything after an hour
+      var embalseId, index; // variables to use as marker inside values - works like structures
+
+      // Create a marker for each embalse and attach it to a marker group
+      var markersGroup = L.featureGroup().addTo(mymap); // create group of markers and initialize them
+      for (var i = 0; i < locationArray.length; i++) {
+        marker = L.marker([locationArray[i][1],locationArray[i][2]]).addTo(markersGroup); // add marker to the group
+        marker.embalseId  = locationArray[i][0]; // store id of embalse
+				marker.index = i; // store index to be later on used at the time of refering to the data
+			}
+
+			mymap.spin(true);
+			var queue = d3.queue(); // Define queue and its elements
+			for (var i = 0; i < locationArray.length; i++) {
+				queue.defer(d3.text, urlEmbalse(locationArray[i][0]));
+			}
+
+			// Callback function to execute tasks
+			queue.awaitAll(function (err, results) {
+
+  				// results are provided as an array - filter them
+  				var embalsesData  = [ parseData(results[0]), parseData(results[1]),
+																parseData(results[2]), parseData(results[3]),
+																parseData(results[4]), parseData(results[5]),
+																parseData(results[6]), parseData(results[7]),
+																parseData(results[8]), parseData(results[9]),
+																parseData(results[10])
+															];
+
+					mymap.spin(false); // remove spinner after info was taken
+
+					// define onclick
+					markersGroup.on("click", function(event) {
+						var div  = $('<div style="width: 300px; height: 300px;"><svg/></div>')[0];
+						if (embalsesData[event.layer.index] != "") {
+							graphMarker(embalsesData[event.layer.index],returnName(event.layer.embalseId),div); // make graph if data is ok
+							event.layer.bindPopup(div,{maxHeight: 300,maxWidth: 300}); // show graph
+						} else {
+							event.layer.bindPopup("Data could not be downloaded..."); // show popup if data is empty
+						}
+					});
+			});
+
+</script>
+
+</body>
+</html>
